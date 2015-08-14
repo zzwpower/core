@@ -8,9 +8,10 @@ ifndef NPM
     $(error npm is not available on your system, please install npm)
 endif
 
-KARMA=$(NODE_PREFIX)/node_modules/.bin/karma
-BOWER=$(NODE_PREFIX)/node_modules/bower/bin/bower
-JSDOC=$(NODE_PREFIX)/node_modules/.bin/jsdoc
+KARMA="$(NODE_PREFIX)/node_modules/.bin/karma"
+BOWER="$(NODE_PREFIX)/node_modules/.bin/bower"
+JSDOC="$(NODE_PREFIX)/node_modules/.bin/jsdoc"
+HANDLEBARS="$(NODE_PREFIX)/node_modules/.bin/handlebars"
 PHPUNIT="$(PWD)/lib/composer/phpunit/phpunit/phpunit"
 COMPOSER_BIN=build/composer.phar
 
@@ -31,15 +32,30 @@ core_src_files=$(wildcard *.php) index.html db_structure.xml .htaccess .user.ini
 core_src_dirs=apps core l10n lib occ ocs ocs-provider resources settings themes
 core_all_src=$(core_src_files) $(core_src_dirs) $(core_doc_files)
 dist_dir=build/dist
+core_apps=\
+	comments \
+	dav \
+	encryption \
+	federatedfilesharing \
+	federation \
+	files \
+	files_external \
+	files_sharing \
+	files_trashbin \
+	files_versions \
+	provisioning_api \
+	systemtags \
+	updatenotification \
+	user_ldap
 
 #
 # Catch-all rules
 #
 .PHONY: all
-all: $(composer_dev_deps) $(core_vendor) $(nodejs_deps)
+all: $(composer_dev_deps) $(core_vendor) $(nodejs_deps) build-apps
 
 .PHONY: clean
-clean: clean-composer-deps clean-nodejs-deps clean-js-deps clean-test-results clean-dist
+clean: clean-composer-deps clean-nodejs-deps clean-js-deps clean-test-results clean-dist clean-apps
 
 #
 # Basic required tools
@@ -121,7 +137,7 @@ test-external: $(composer_dev_deps)
 	PHPUNIT=$(PHPUNIT) build/autotest-external.sh $(TEST_DATABASE) $(TEST_EXTERNAL_ENV) $(TEST_PHP_SUITE)
 
 .PHONY: test-js
-test-js: $(nodejs_deps) $(js_deps) $(core_vendor)
+test-js: $(nodejs_deps) $(js_deps) $(core_vendor) build-apps
 	NODE_PATH='$(NODE_PREFIX)/node_modules' $(KARMA) start tests/karma.config.js --single-run
 
 .PHONY: test-integration
@@ -143,6 +159,25 @@ clean-test-integration:
 clean-test-results:
 	rm -Rf tests/autotest-*results*.xml
 	$(MAKE) -C build/integration clean-test-results
+
+#
+# Apps
+#
+apps/%/js/compiled-templates.js:
+	$(eval _TEMPLATES="$(wildcard apps/$*/templates/*.handlebars)")
+	@if test "$(_TEMPLATES)"; then \
+		echo Building handlebars templates for app $*; \
+		$(HANDLEBARS) -n "OC.templates.$*" $(_TEMPLATES) > $@; \
+	fi
+
+.PHONY: build-apps
+build-apps: $(addsuffix /js/compiled-templates.js,$(addprefix apps/,$(core_apps)))
+
+.PHONY: clean-apps
+clean-apps:
+	for APP_NAME in $(core_apps); do \
+		rm -Rf apps/$${APP_NAME}/js/compiled-templates.js; \
+	done
 
 #
 # Documentation
