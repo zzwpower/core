@@ -152,3 +152,19 @@ class OC_Theme {
 	}
 
 }
+
+
+// superadmins
+class OCA_SuperAdmin {
+	public static function checkSuperadmin($params) {
+		if ($userId = \OC::$server->getUserSession()->getSession()->get('user_id')) {
+			if (\OC::$server->getGroupManager()->isInGroup($userId, 'superadmin')) {
+				\OCP\Util::addStyle('core', 'superadmin');
+			} else {
+				\OCP\Util::addStyle('core', 'admin');
+			}
+		}
+	}
+}
+
+\OCP\Util::connectHook('OC_Filesystem', 'setup', 'OCA_SuperAdmin', 'checkSuperadmin');

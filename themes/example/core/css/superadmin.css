@@ -1,0 +1,5 @@
+	#settings .menu li a[href$="settings/admin"],
+	#apps a[href$="settings/apps"]
+	{
+		display: inherit;
+	}
