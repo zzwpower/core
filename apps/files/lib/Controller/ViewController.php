@@ -190,7 +190,7 @@ class ViewController extends Controller {
 		\OCP\Util::addScript('files', 'navigation');
 
 		// generated templates
-		\OCP\Util::addScript('files', 'compiled-templates');
+		\OCP\Util::addScript('files', 'templates/detailsview.handlebars');
 
 		// if IE8 and "?dir=path&view=someview" was specified, reformat the URL to use a hash like "#?dir=path&view=someview"
 		$isIE8 = $this->request->isUserAgent([Request::USER_AGENT_IE_8]);

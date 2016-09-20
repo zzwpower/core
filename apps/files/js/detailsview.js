@@ -103,7 +103,7 @@
 
 		template: function(vars) {
 			if (!this._template) {
-				this._template = OC.templates.files.detailsview;
+				this._template = OCA.Files.Templates.detailsview;
 			}
 			return this._template(vars);
 		},

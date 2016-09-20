@@ -129,11 +129,11 @@ clean-js-deps:
 # Tests
 #
 .PHONY: test-php
-test-php: $(composer_dev_deps)
+test-php: $(composer_dev_deps) build-apps
 	PHPUNIT=$(PHPUNIT) build/autotest.sh $(TEST_DATABASE) $(TEST_PHP_SUITE)
 
 .PHONY: test-external
-test-external: $(composer_dev_deps)
+test-external: $(composer_dev_deps) build-apps
 	PHPUNIT=$(PHPUNIT) build/autotest-external.sh $(TEST_DATABASE) $(TEST_EXTERNAL_ENV) $(TEST_PHP_SUITE)
 
 .PHONY: test-js
@@ -141,7 +141,7 @@ test-js: $(nodejs_deps) $(js_deps) $(core_vendor) build-apps
 	NODE_PATH='$(NODE_PREFIX)/node_modules' $(KARMA) start tests/karma.config.js --single-run
 
 .PHONY: test-integration
-test-integration: $(composer_dev_deps)
+test-integration: $(composer_dev_deps) build-apps
 	$(MAKE) -C build/integration
 
 .PHONY: test-php-lint
@@ -163,20 +163,22 @@ clean-test-results:
 #
 # Apps
 #
-apps/%/js/compiled-templates.js:
-	$(eval _TEMPLATES="$(wildcard apps/$*/templates/*.handlebars)")
-	@if test "$(_TEMPLATES)"; then \
-		echo Building handlebars templates for app $*; \
-		$(HANDLEBARS) -n "OC.templates.$*" $(_TEMPLATES) > $@; \
-	fi
-
 .PHONY: build-apps
-build-apps: $(addsuffix /js/compiled-templates.js,$(addprefix apps/,$(core_apps)))
+build-apps: $(composer_dev_deps) $(nodejs_deps)
+	@for APP in $(core_apps); do \
+		if test -r apps/$$APP/Makefile; then \
+			echo Building app $$APP; \
+			$(MAKE) -C apps/$$APP/; \
+		fi; \
+	done
 
 .PHONY: clean-apps
 clean-apps:
-	for APP_NAME in $(core_apps); do \
-		rm -Rf apps/$${APP_NAME}/js/compiled-templates.js; \
+	@for APP in $(core_apps); do \
+		if test -r apps/$$APP/Makefile; then \
+			echo Cleaning up app $$APP; \
+			$(MAKE) -C apps/$$APP/ clean; \
+		fi; \
 	done
 
 #
@@ -206,7 +208,7 @@ $(dist_dir)/owncloud: $(composer_deps) $(core_vendor) $(core_all_src)
 	find $@ -name no-php -delete
 	rm -Rf $@/core/js/tests
 	rm -Rf $@/settings/tests
-	rm -Rf $@/apps/*/tests
+	rm -Rf $@/apps/*/{tests,Makefile}
 	rm -Rf $@/lib/composer/*/*/{tests,bin,examples}
 	rm -Rf $@/core/vendor/*/{.bower.json,bower.json,package.json,test,tests,testem.json,demo,demos}
 	find $@/{core/,l10n/,apps/,lib/composer/} -iname \*.sh -delete
