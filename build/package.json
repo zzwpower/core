@@ -20,7 +20,23 @@
     "phantomjs-prebuilt": "*",
     "jasmine-core": "~2.3.4",
     "jsdoc": "~3.4.0",
-    "handlebars": "^4.0.5"
+    "handlebars": "^4.0.5",
+	"npm-watch": "*"
   },
-  "engine": "node >= 0.8"
+  "engine": "node >= 0.8",
+  "scripts": {
+      "build": "make -C .. build-core build-apps",
+      "watch": "npm-watch"
+  },
+  "watch": {
+      "build": {
+          "patterns": [
+              "../core/js/**/*.{js,handlebars}",
+              "../apps/*/js/**/*.{js,handlebars}",
+              "../settings/js/**/*.{js,handlebars}"
+          ],
+          "ignore": "**/*.handlebars.js",
+          "extensions": "js,handlebars"
+      }
+  }
 }

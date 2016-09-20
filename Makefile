@@ -28,8 +28,8 @@ nodejs_deps=build/node_modules
 core_vendor=core/vendor
 
 core_doc_files=AUTHORS COPYING-AGPL README.md
-core_src_files=$(wildcard *.php) index.html db_structure.xml .htaccess .user.ini
-core_src_dirs=apps core l10n lib occ ocs ocs-provider resources settings themes
+core_src_files=$(wildcard *.php) index.html db_structure.xml .htaccess .user.ini occ
+core_src_dirs=apps core l10n lib ocs ocs-provider resources settings themes
 core_all_src=$(core_src_files) $(core_src_dirs) $(core_doc_files)
 dist_dir=build/dist
 core_apps=\
@@ -52,7 +52,7 @@ core_apps=\
 # Catch-all rules
 #
 .PHONY: all
-all: $(composer_dev_deps) $(core_vendor) $(nodejs_deps) build-apps
+all: $(composer_dev_deps) $(core_vendor) $(nodejs_deps) build-core build-apps
 
 .PHONY: clean
 clean: clean-composer-deps clean-nodejs-deps clean-js-deps clean-test-results clean-dist clean-apps
@@ -129,19 +129,19 @@ clean-js-deps:
 # Tests
 #
 .PHONY: test-php
-test-php: $(composer_dev_deps) build-apps
+test-php: $(composer_dev_deps) build-core build-apps
 	PHPUNIT=$(PHPUNIT) build/autotest.sh $(TEST_DATABASE) $(TEST_PHP_SUITE)
 
 .PHONY: test-external
-test-external: $(composer_dev_deps) build-apps
+test-external: $(composer_dev_deps) build-core build-apps
 	PHPUNIT=$(PHPUNIT) build/autotest-external.sh $(TEST_DATABASE) $(TEST_EXTERNAL_ENV) $(TEST_PHP_SUITE)
 
 .PHONY: test-js
-test-js: $(nodejs_deps) $(js_deps) $(core_vendor) build-apps
+test-js: $(nodejs_deps) $(js_deps) $(core_vendor) build-core build-apps
 	NODE_PATH='$(NODE_PREFIX)/node_modules' $(KARMA) start tests/karma.config.js --single-run
 
 .PHONY: test-integration
-test-integration: $(composer_dev_deps) build-apps
+test-integration: $(composer_dev_deps) build-core build-apps
 	$(MAKE) -C build/integration
 
 .PHONY: test-php-lint
@@ -159,6 +159,27 @@ clean-test-integration:
 clean-test-results:
 	rm -Rf tests/autotest-*results*.xml
 	$(MAKE) -C build/integration clean-test-results
+
+#
+# Core
+#
+.PHONY: build-core
+build-core:
+	@for DIR in $(core_src_dirs); do \
+		if test -r $$DIR/Makefile; then \
+			echo Building core dir $$DIR; \
+			$(MAKE) -C apps/$$DIR/; \
+		fi; \
+	done
+
+.PHONY: clean-core
+clean-core:
+	@for DIR in $(core_src_dirs); do \
+		if test -r $$DIR/Makefile; then \
+			echo Cleaning up core dir $$DIR; \
+			$(MAKE) -C apps/$$DIR/ clean; \
+		fi; \
+	done
 
 #
 # Apps
@@ -238,6 +259,14 @@ dist-dir: $(dist_dir)/owncloud
 .PHONY: clean-dist
 clean-dist:
 	rm -Rf $(dist_dir)
+
+#
+# Watch
+#
+.PHONY: watch
+watch: $(nodejs_deps)
+	npm --prefix $(NODE_PREFIX) run watch
+
 #
 # Miscellaneous tools
 #
