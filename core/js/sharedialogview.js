@@ -142,7 +142,7 @@
 				{
 					format: 'json',
 					search: search.term.trim(),
-					perPage: 200,
+					perPage: 15,
 					itemType: view.model.get('itemType')
 				},
 				function (result) {
