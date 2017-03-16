@@ -39,6 +39,7 @@ use OCP\Files\Cache\ICache;
 use OCP\Files\Cache\ICacheEntry;
 use \OCP\Files\IMimeTypeLoader;
 use OCP\IDBConnection;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 
 /**
  * Metadata cache for a storage
@@ -160,6 +161,64 @@ class Cache implements ICache {
 		}
 	}
 
+	/**
+	 * get the stored metadata of files or folders
+	 *
+	 * Note: this does not support partial data $this->partial[$file]
+	 *
+	 * @param string[] | int[] $files either the path of files or folders or the file id for files or folders
+	 * @return ICacheEntry[]|false the cache entry as array of false if the file is not found in the cache
+	 */
+	public function getMultiple($files) {
+		foreach($files as $file) {
+			if (is_string($file) or $file == '') {
+				$pathHashes[] = md5($this->normalize($file));
+			} else { //file id
+				$fileIds[] = $file;
+			}
+		}
+
+		$qb = $this->connection->getQueryBuilder();
+		$qb->select('fileid', 'storage', 'path', 'parent', 'name', 'mimetype', 'mimepart', 'size', 'mtime',
+			'storage_mtime', 'encrypted', 'etag', 'permissions', 'checksum')
+			->from('filecache');
+		if (empty($fileIds) && !empty($pathHashes)) {
+			$storageId = $this->getNumericStorageId();
+			$qb->where($qb->expr()->eq('storage', $qb->createNamedParameter($storageId)));
+			$qb->andWhere($qb->expr()->in('path_hash', $qb->createParameter('path_hashes')));
+			$qb->setParameter('path_hashes', $pathHashes, IQueryBuilder::PARAM_STR_ARRAY);
+		} else if (empty($pathHashes) && !empty($fileIds)) { //file id
+			$qb->where($qb->expr()->in('fileid', $qb->createParameter('fileids')));
+			$qb->setParameter('fileids', $fileIds, IQueryBuilder::PARAM_INT_ARRAY);
+		} else {
+			throw new \RuntimeException('Function got unexpected argument type');
+		}
+
+		$cursor = $qb->execute();
+
+		$result = false;
+		while($data = $cursor->fetch()) {
+			// This function does not support partial data
+			$data['fileid'] = (int)$data['fileid'];
+			$data['parent'] = (int)$data['parent'];
+			$data['size'] = 0 + $data['size'];
+			$data['mtime'] = (int)$data['mtime'];
+			$data['storage_mtime'] = (int)$data['storage_mtime'];
+			$data['encryptedVersion'] = (int)$data['encrypted'];
+			$data['encrypted'] = (bool)$data['encrypted'];
+			$data['storage'] = $this->storageId;
+			$data['mimetype'] = $this->mimetypeLoader->getMimetypeById($data['mimetype']);
+			$data['mimepart'] = $this->mimetypeLoader->getMimetypeById($data['mimepart']);
+			if ($data['storage_mtime'] == 0) {
+				$data['storage_mtime'] = $data['mtime'];
+			}
+			$data['permissions'] = (int)$data['permissions'];
+			$result[] = new CacheEntry($data);
+		}
+		$cursor->closeCursor();
+		return $result;
+	}	
+	
 	/**
 	 * get the metadata of all files stored in $folder
 	 *

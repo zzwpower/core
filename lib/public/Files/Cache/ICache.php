@@ -56,6 +56,15 @@ interface ICache {
 	 */
 	public function get($file);
 
+
+	/**
+	 * get the stored metadata of files or folders
+	 *
+	 * @param string[] | int[] $files either the path of files or folders or the file id for files or folders
+	 * @return ICacheEntry[]|false the cache entry as array of false if the file is not found in the cache
+	 */
+	public function getMultiple($files);
+
 	/**
 	 * get the metadata of all files stored in $folder
 	 *

@@ -73,14 +73,25 @@ class HomeCache extends Cache {
 	 * @return ICacheEntry
 	 */
 	public function get($path) {
-		$data = parent::get($path);
 		if ($path === '' or $path === '/') {
 			// only the size of the "files" dir counts
-			$filesData = parent::get('files');
+			$resultData = parent::getMultiple([$path, 'files']);
+
+			$data = false;
+			$filesData = false;
+			foreach($resultData as $result) {
+				if ($result['path'] === 'files') {
+					$filesData = $result;
+				}else if ($result['path'] === '' or $result['path'] === '/') {
+					$data = $result;
+				}
+			}
 
 			if (isset($filesData['size'])) {
 				$data['size'] = $filesData['size'];
 			}
+		} else {
+			$data = parent::get($path);
 		}
 		return $data;
 	}
