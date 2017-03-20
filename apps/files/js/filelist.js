@@ -2865,7 +2865,7 @@
 		},
 
 		/**
-		 * Favorite All files in the fileList
+		 * Favorite all files in the current fileList
 		 */
 		favoriteAll: function() {
 			for (var i = 0; i < this.files.length; i++) {
@@ -2876,6 +2876,21 @@
 					model = this.getModelForFile(this.files[i].name);
 				}
 				this.fileActions.triggerAction('Favorite', model, this);
+			}
+		},
+
+		/**
+		 * Delete all files in the current fileList
+		 */
+		deleteAll: function() {
+			for (var i = 0; i < this.files.length; i++) {
+				var model = this.getModelForFile(this.files[i].name);
+				if(!model) {
+					// item not loaded due to pagination
+					this._nextPage(false);
+					model = this.getModelForFile(this.files[i].name);
+				}
+				this.fileActions.triggerAction('Delete', model, this);
 			}
 		},
 
