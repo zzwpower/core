@@ -82,6 +82,8 @@ class Notifications {
 	 */
 	public function sendRemoteShare($token, $shareWith, $name, $remote_id, $owner, $ownerFederatedId, $sharedBy, $sharedByFederatedId) {
 
+		$status = false;
+
 		list($user, $remote) = $this->addressHandler->splitUserRemote($shareWith);
 
 		if ($user && $remote) {
@@ -122,7 +124,7 @@ class Notifications {
 	 * @param string $remote remote address of the owner
 	 * @param string $shareWith
 	 * @param int $permission
-	 * @return bool
+	 * @return array|bool
 	 * @throws \OC\HintException
 	 * @throws \OC\ServerNotAvailableException
 	 */
