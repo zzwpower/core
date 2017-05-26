@@ -219,15 +219,6 @@ class File extends Node implements IFile {
 				}
 			}
 
-			// since we skipped the view we need to scan and emit the hooks ourselves
-			$storage->getUpdater()->update($internalPath);
-
-			try {
-				$this->changeLock(ILockingProvider::LOCK_SHARED);
-			} catch (LockedException $e) {
-				throw new FileLocked($e->getMessage(), $e->getCode(), $e);
-			}
-
 			// allow sync clients to send the mtime along in a header
 			if (isset($this->request->server['HTTP_X_OC_MTIME'])) {
 				$mtime = $this->sanitizeMtime(
@@ -236,6 +227,15 @@ class File extends Node implements IFile {
 				if ($this->fileView->touch($this->path, $mtime)) {
 					header('X-OC-MTime: accepted');
 				}
+			} else {
+				// since we skipped the view we need to scan and emit the hooks ourselves
+				$storage->getUpdater()->update($internalPath);
+			}
+
+			try {
+				$this->changeLock(ILockingProvider::LOCK_SHARED);
+			} catch (LockedException $e) {
+				throw new FileLocked($e->getMessage(), $e->getCode(), $e);
 			}
 			
 			if ($view) {
