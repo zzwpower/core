@@ -1,6 +1,6 @@
 {
-  "name": "ownCloud",
-  "version": "10.0.0 beta",
+  "name": "owncloud",
+  "version": "10.1.0prealpha",
   "homepage": "https://www.owncloud.org",
   "license": "AGPL",
   "private": true,
