@@ -2052,7 +2052,7 @@ class View {
 		$pathSegments = explode('/', $path);
 		if (isset($pathSegments[2])) {
 			// E.g.: /username/files/path-to-file
-			return ($pathSegments[2] === 'files') && (count($pathSegments) > 3);
+			return ($pathSegments[2] === 'files') && (count($pathSegments) >= 3);
 		}
 
 		return true;
