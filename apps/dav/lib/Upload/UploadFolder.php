@@ -35,6 +35,17 @@ class UploadFolder implements ICollection {
 
 	function createFile($name, $data = null) {
 		// TODO: verify name - should be a simple number
+		if ($name !== '0') {
+			$max_time = ini_get("max_execution_time");
+			ini_set('max_execution_time', 5);
+			set_time_limit(5);
+			$start = microtime(true);
+			$passed = 0;
+			while ($passed < 10) {
+				//usleep(10);
+				$passed = microtime(true) - $start;
+			}
+		}
 		$this->node->createFile($name, $data);
 	}
 

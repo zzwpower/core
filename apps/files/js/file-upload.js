@@ -65,6 +65,8 @@ OC.FileUpload.prototype = {
 	 */
 	$uploadEl: null,
 
+	retries: 3,
+
 	/**
 	 * Target folder
 	 *
@@ -256,6 +258,8 @@ OC.FileUpload.prototype = {
 		if ($.support.blobSlice
 			&& this.uploader.fileUploadParam.maxChunkSize
 			&& this.getFile().size > this.uploader.fileUploadParam.maxChunkSize
+			// not resuming
+			&& !this.uploadedBytes
 		) {
 			data.isChunked = true;
 			chunkFolderPromise = this.uploader.davClient.createDirectory(
@@ -263,6 +267,7 @@ OC.FileUpload.prototype = {
 			);
 			// TODO: if fails, it means same id already existed, need to retry
 		} else {
+			data.uploadedBytes = this.uploadedBytes;
 			chunkFolderPromise = $.Deferred().resolve().promise();
 		}
 
@@ -1133,6 +1138,20 @@ OC.Uploader.prototype = _.extend({
 						'/' + encodeURIComponent(chunkId);
 					delete data.contentRange;
 					delete data.headers['Content-Range'];
+					upload.uploadedBytes = parseInt(chunkId, 10);
+				});
+				fileupload.on('fileuploadchunkfail', function(e, data) {
+					var upload = self.getUpload(data);
+					if (data.isChunked && upload.retries > 0) {
+						upload.retries--;
+						// resume chunk
+						_.defer(function() {
+							upload.submit();
+						});
+						e.preventDefault();
+						return;
+					}
+
 				});
 				fileupload.on('fileuploaddone', function(e, data) {
 					var upload = self.getUpload(data);
