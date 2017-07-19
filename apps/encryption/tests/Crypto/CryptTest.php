@@ -153,7 +153,13 @@ class CryptTest extends TestCase {
 			->method('warning')
 			->with('Unsupported cipher (Not-Existing-Cipher) defined in config.php supported. Falling back to AES-256-CTR');
 
-		$this->assertSame('AES-256-CTR',  $this->crypt->getCipher());
+		// Workaround for OpenSSL 0.9.8. Fallback to an old cipher that should work.
+		if(OPENSSL_VERSION_NUMBER < 0x1000101f) {
+			$this->assertSame('AES-256-CTR',  'AES-128-CFB');
+		} else {
+			$this->assertSame('AES-256-CTR',  $this->crypt->getCipher());
+		}
+
 	}
 
 	/**
