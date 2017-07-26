@@ -61,7 +61,7 @@ class PersonalSecuritySettingsPage extends OwncloudPage
 
 	/**
 	 * finds and returns the TR NodeElement of the app
-	 * throws Exception if App could not be found in list
+	 * throws Exception if App could not be found in the list
 	 *
 	 * @param string $appName
 	 * @throws \Exception
@@ -70,7 +70,7 @@ class PersonalSecuritySettingsPage extends OwncloudPage
 	public function getLinkedAppByName($appName)
 	{
 		$appTrs = $this->findAll("xpath", $this->linkedAppsTrXpath);
-		foreach ( $appTrs as $appTr ) {
+		foreach ($appTrs as $appTr) {
 			$app = $appTr->find("xpath", $this->linkedAppNameXpath);
 			if ($app->getText() === $appName) {
 				return $appTr;

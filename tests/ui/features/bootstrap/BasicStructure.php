@@ -170,7 +170,7 @@ trait BasicStructure
 	private function createGroup($group)
 	{
 		$group = trim($group);
-		$result=SetupHelper::createGroup($this->ocPath, $group);
+		$result = SetupHelper::createGroup($this->ocPath, $group);
 		if ($result["code"] != 0) {
 			throw new Exception("could not create group. " . $result["stdOut"] . " " . $result["stdErr"]);
 		}
@@ -194,7 +194,7 @@ trait BasicStructure
 	 */
 	public function theUserIsInTheGroup($user, $group)
 	{
-		$result=SetupHelper::addUserToGroup($this->ocPath, $group, $user);
+		$result = SetupHelper::addUserToGroup($this->ocPath, $group, $user);
 		if ($result["code"] != 0) {
 			throw new Exception("could not add user to group. " . $result["stdOut"] . " " . $result["stdErr"]);
 		}
@@ -217,51 +217,51 @@ trait BasicStructure
 	public function tearDownScenarioDeleteCreatedUsersAndGroups(AfterScenarioScope $scope)
 	{
 		foreach ($this->getCreatedUserNames() as $user) {
-			$result=SetupHelper::deleteUser($this->ocPath, $user);
+			$result = SetupHelper::deleteUser($this->ocPath, $user);
 			if ($result["code"] != 0) {
 				throw new Exception("could not delete user. " . $result["stdOut"] . " " . $result["stdErr"]);
 			}
 		}
 
 		foreach ($this->getCreatedGroupNames() as $group) {
-			$result=SetupHelper::deleteGroup($this->ocPath, $group);
+			$result = SetupHelper::deleteGroup($this->ocPath, $group);
 			if ($result["code"] != 0) {
 				throw new Exception("could not delete group. " . $result["stdOut"] . " " . $result["stdErr"]);
 			}
 		}
 	}
 
-	public function getRegularUserPassword ()
+	public function getRegularUserPassword()
 	{
 		return $this->regularUserPassword;
 	}
 
-	public function getRegularUserName ()
+	public function getRegularUserName()
 	{
 		return $this->regularUserName;
 	}
 
-	public function getRegularUserNames ()
+	public function getRegularUserNames()
 	{
 		return $this->regularUserNames;
 	}
 
-	public function getCreatedUserNames ()
+	public function getCreatedUserNames()
 	{
 		return array_keys($this->createdUsers);
 	}
 
-	public function getRegularGroupName ()
+	public function getRegularGroupName()
 	{
 		return $this->regularGroupName;
 	}
 
-	public function getRegularGroupNames ()
+	public function getRegularGroupNames()
 	{
 		return $this->regularGroupNames;
 	}
 
-	public function getCreatedGroupNames ()
+	public function getCreatedGroupNames()
 	{
 		return $this->createdGroupNames;
 	}
@@ -271,7 +271,7 @@ trait BasicStructure
 	 * @param string $username
 	 * @return string password
 	 */
-	public function getUserPassword ($username)
+	public function getUserPassword($username)
 	{
 		if ($username === 'admin') {
 			$password = $this->adminPassword;
@@ -283,5 +283,43 @@ trait BasicStructure
 		}
 		//make sure the function always returns a string
 		return (string) $password;
+	}
+
+	/**
+	 * substitutes codes like %base_url% with the value
+	 * if the given values does not have anything to be substituted its returned unmodified
+	 * @param string $value
+	 * @return string
+	 */
+	public function substituteInLineCodes($value)
+	{
+		$substitutions = [ 
+			[ 
+				"code" => "%base_url%",
+				"function" => [ 
+					$this,
+					"getMinkParameter" 
+				],
+				"parameter" => [ 
+					"base_url" 
+				] 
+			],
+			[ 
+				"code" => "%regularuser%",
+				"function" => [ 
+					$this,
+					"getRegularUserName" 
+				],
+				"parameter" => [ ] 
+			] 
+		];
+		foreach ($substitutions as $substitution) {
+			$value = str_replace(
+				$substitution["code"],
+				call_user_func_array($substitution["function"], $substitution["parameter"]),
+				$value
+			);
+		}
+		return $value;
 	}
 }
