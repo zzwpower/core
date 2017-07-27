@@ -29,6 +29,7 @@ class IpHelper
 	const IPV6_LOOPBACK_ADDRESS = '::1';
 	const IPV6_LOOPBACK_ADDRESS_SUBNET = '::0';
 	const IPV4_LOOPBACK_ADDRESS_TOP = '127.';
+	const IPV6_LINK_LOCAL_ADDRESS_TOP = 'fe80';
 	
 	/**
 	 * parse the output of ifconfig to find matching items such as IP addresses
@@ -218,11 +219,11 @@ class IpHelper
 
 	/**
 	 * find the first IPv4 address on the local system that is not a loopback address
-	 * i.e. a "real" IPv4 address on some network interface
+	 * i.e. a "real" routable IPv4 address on some network interface
 	 * @throws InvalidArgumentException
 	 * @return string IPv4 address
 	 */
-	private static function localIpv4Address()
+	private static function routableIpv4Address()
 	{
 		foreach (self::systemIpv4Addresses() as $ipv4Address) {
 			if (strpos($ipv4Address, self::IPV4_LOOPBACK_ADDRESS_TOP) !== 0) {
@@ -230,130 +231,131 @@ class IpHelper
 			}
 		}
 
-		throw new \InvalidArgumentException("localIpv4Address: No IP address found");
+		throw new \InvalidArgumentException("routableIpv4Address: No IP address found");
 	}
 
 	/**
-	 * find the first IPv6 address on the local system that is not a loopback address
-	 * i.e. a "real" IPv6 address on some network interface
+	 * find the first IPv6 address on the local system that is not a loopback or link-local address
+	 * i.e. a "real" routable IPv6 address on some network interface
 	 * @throws InvalidArgumentException
 	 * @return string IPv6 address
 	 */
-	private static function localIpv6Address()
+	private static function routeableIpv6Address()
 	{
 		foreach (self::systemIpv6Addresses() as $ipv6Address) {
-			if ($ipv6Address !== self::IPV6_LOOPBACK_ADDRESS) {
+			if (($ipv6Address !== self::IPV6_LOOPBACK_ADDRESS)
+				&& (strpos($ipv6Address, self::IPV6_LINK_LOCAL_ADDRESS_TOP) !== 0)) {
 				return $ipv6Address;
 			}
 		}
 
-		throw new \InvalidArgumentException("localIpv6Address: No IP address found");
+		throw new \InvalidArgumentException("routeableIpv6Address: No IP address found");
 	}
 
 	/**
 	 * get a non-loopback address on the local system for the given IP address family
-	 * i.e. a "real" IP address on some network interface
+	 * i.e. a "real" routable IP address on some network interface
 	 * @param string IP address family IPv4 or IPv6 (not case sensitive)
 	 * @throws InvalidArgumentException
 	 * @return string IP address
 	 */
-	private static function localIpAddress($ipAddressFamily)
+	private static function routableIpAddress($ipAddressFamily)
 	{
 		switch (strtolower($ipAddressFamily)) {
 			case 'ipv4':
-				return self::localIpv4Address();
+				return self::routableIpv4Address();
 			case 'ipv6':
-				return self::localIpv6Address();
+				return self::routeableIpv6Address();
 		}
 		
-		throw new \InvalidArgumentException("localIpAddress: Invalid IP address family");
+		throw new \InvalidArgumentException("routableIpAddress: Invalid IP address family");
 	}
 
 	/**
 	 * calculate the base address of the subnet with the given CIDR
-	 * that contains the IPv4 address of the first local IPv4 subnet
+	 * that contains the IPv4 address of the first routable IPv4 subnet
 	 * @param int $cidr the CIDR "mask" size for the subnet
 	 * @return string IPv4 local subnet base address
 	 */
-	private static function localIpv4AddressSubnet($cidr)
+	private static function routableIpv4AddressSubnet($cidr)
 	{
-		return self::ipv4AddressSubnet(self::localIpv4Address(), $cidr);
+		return self::ipv4AddressSubnet(self::routableIpv4Address(), $cidr);
 	}
 
 	/**
 	 * calculate the base address of the subnet with the given CIDR
-	 * that contains the IPv6 address of the first local IPv6 subnet
+	 * that contains the IPv6 address of the first routable IPv6 subnet
 	 * @param int $cidr the CIDR "mask" size for the subnet
 	 * @return string IPv6 local subnet base address
 	 */
-	private static function localIpv6AddressSubnet($cidr)
+	private static function routeableIpv6AddressSubnet($cidr)
 	{
-		return self::ipv6AddressSubnet(self::localIpv6Address(), $cidr);
+		return self::ipv6AddressSubnet(self::routeableIpv6Address(), $cidr);
 	}
 
 	/**
 	 * calculate the base address of the subnet with the given CIDR
-	 * that contains the first local IP address of the given IP address family
+	 * that contains the first routable IP address of the given IP address family
 	 * @param string IP address family IPv4 or IPv6 (not case sensitive)
 	 * @param int $cidr the CIDR "mask" size for the subnet
 	 * @throws InvalidArgumentException
 	 * @return string IP of local subnet base address
 	 */
-	private static function localIpAddressSubnet($ipAddressFamily, $cidr)
+	private static function routableIpAddressSubnet($ipAddressFamily, $cidr)
 	{
 		switch (strtolower($ipAddressFamily)) {
 			case 'ipv4':
-				return self::localIpv4AddressSubnet($cidr);
+				return self::routableIpv4AddressSubnet($cidr);
 			case 'ipv6':
-				return self::localIpv6AddressSubnet($cidr);
+				return self::routeableIpv6AddressSubnet($cidr);
 		}
 		
-		throw new \InvalidArgumentException("localIpAddressSubnet: Invalid IP address family");
+		throw new \InvalidArgumentException("routableIpAddressSubnet: Invalid IP address family");
 	}
 
 	/**
 	 * find an IP address on the local system that is either a loopback address
-	 * or a real local IP address of the given IP address family.
-	 * @param $localOrLoopback which type of address to return - "local" or "loopback"
+	 * or a routable IP address of the given IP address family.
+	 * @param $networkScope which type of address to return - "routable" or "loopback"
 	 * @param string IP address family IPv4 or IPv6 (not case sensitive)
 	 * @throws InvalidArgumentException
 	 * @return string IP address
 	 */
-	public static function ipAddress($localOrLoopback, $ipAddressFamily)
+	public static function ipAddress($networkScope, $ipAddressFamily)
 	{
-		switch (strtolower($localOrLoopback)) {
-			case 'local':
-				return self::localIpAddress($ipAddressFamily);
+		switch (strtolower($networkScope)) {
+			case 'routable':
+				return self::routableIpAddress($ipAddressFamily);
 				break;
 			case 'loopback':
 				return self::loopbackIpAddress($ipAddressFamily);
 				break;
 			default:
-				throw new \InvalidArgumentException("ipAddress: Invalid local or loopback passed");
+				throw new \InvalidArgumentException("ipAddress: Invalid networkScope passed. (Must be routable or loopback)");
 				break;
 		}
 	}
 
 	/**
 	 * calculate the base address of the subnet with the given CIDR
-	 * that contains the local or loopback IP address of the given IP address family
-	 * @param $localOrLoopback which type of address to return - "local" or "loopback"
+	 * that contains a routable or loopback IP address of the given IP address family
+	 * @param $networkScope which type of address to return - "routable" or "loopback"
 	 * @param string IP address family IPv4 or IPv6 (not case sensitive)
 	 * @param int $cidr the CIDR "mask" size for the subnet
 	 * @throws InvalidArgumentException
 	 * @return string IP of base address
 	 */
-	public static function ipAddressSubnet($localOrLoopback, $ipAddressFamily, $cidr)
+	public static function ipAddressSubnet($networkScope, $ipAddressFamily, $cidr)
 	{
-		switch (strtolower($localOrLoopback)) {
-			case 'local':
-				return self::localIpAddressSubnet($ipAddressFamily, $cidr);
+		switch (strtolower($networkScope)) {
+			case 'routable':
+				return self::routableIpAddressSubnet($ipAddressFamily, $cidr);
 				break;
 			case 'loopback':
 				return self::loopbackIpAddressSubnet($ipAddressFamily, $cidr);
 				break;
 			default:
-				throw new \InvalidArgumentException("ipAddressSubnet: Invalid local or loopback passed");
+				throw new \InvalidArgumentException("ipAddressSubnet: Invalid networkScope passed. (Must be routable or loopback)");
 				break;
 		}
 	}
