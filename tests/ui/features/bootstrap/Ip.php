@@ -32,6 +32,14 @@ trait Ip
 	private $sourceIpAddress = null;
 		
 	/**
+	 * The base URL parameter to use with the source IP address.
+	 * Accesses the server on IPv4 or IPv6 matching the source IP.
+	 * 
+	 * @var string
+	 */
+	private $baseUrlForSourceIp = 'base_url';
+		
+	/**
 	 * @When the client accesses the server from a :networkScope :ipAddressFamily address
 	 * @param string $networkScope (loopback|routable)
 	 * @param string $ipAddressFamily (ipv4|ipv6)
@@ -40,8 +48,9 @@ trait Ip
 	public function theClientAccessesTheServerFromAddress(
 		$networkScope, $ipAddressFamily
 	) {
-		$this->sourceIpAddress
-				= IpHelper::ipAddress($networkScope, $ipAddressFamily);
+		theClientAccessesTheServerFromIpAddress(
+			IpHelper::ipAddress($networkScope, $ipAddressFamily)
+		);
 	}
 
 	/**
@@ -51,6 +60,13 @@ trait Ip
 	 */
 	public function theClientAccessesTheServerFromIpAddress($sourceIpAddress) {
 		$this->sourceIpAddress = $sourceIpAddress;
-	}
 
+		if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+			$this->baseUrlForSourceIp = 'ipv4_url';
+		} else if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+			$this->baseUrlForSourceIp = 'ipv6_url';
+		} else {
+			$this->baseUrlForSourceIp = 'base_url';
+		}
+	}
 }
