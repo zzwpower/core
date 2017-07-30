@@ -54,7 +54,7 @@ trait Ip
 	public function theClientAccessesTheServerFromAddress(
 		$networkScope, $ipAddressFamily
 	) {
-		theClientAccessesTheServerFromIpAddress(
+		$this->theClientAccessesTheServerFromIpAddress(
 			IpHelper::ipAddress($networkScope, $ipAddressFamily)
 		);
 	}
