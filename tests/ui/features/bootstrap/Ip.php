@@ -37,10 +37,11 @@ trait Ip
 	 * 
 	 * @var string
 	 */
-	private $baseUrlForSourceIp = $this->getMinkParameter("base_url");
+	private $baseUrlForSourceIp = null;
 
 	private $ipv4Url;
 	private $ipv6Url;
+	private $baseUrl;
 		
 	/**
 	 * @When the client accesses the server from a :networkScope :ipAddressFamily address
@@ -70,7 +71,7 @@ trait Ip
 		} else if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
 			$this->baseUrlForSourceIp = $this->ipv6Url;
 		} else {
-			$this->baseUrlForSourceIp = $this->getMinkParameter("base_url");
+			$this->baseUrlForSourceIp = $this->baseUrl;
 		}
 	}
 
@@ -80,5 +81,7 @@ trait Ip
 		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
 		$this->ipv4Url = $suiteParameters['ipv4_url'];
 		$this->ipv6Url = $suiteParameters['ipv6_url'];
+		$baseUrl = $this->getMinkParameter("base_url");
+		$baseUrlForSourceIp = $baseUrl;
 	}
 }
