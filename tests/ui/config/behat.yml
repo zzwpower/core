@@ -11,8 +11,6 @@ default:
       context: &common_suite_context
         parameters:
           ocPath: ./
-          ipv4_url: "%env(IPV4_URL)%"
-          ipv6_url: "%env(IPV6_URL)%"
           adminPassword: admin
           regularUserPassword: 123456
           regularUserName: regularuser
