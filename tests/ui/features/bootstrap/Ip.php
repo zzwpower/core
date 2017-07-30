@@ -79,10 +79,12 @@ trait Ip
 	/** @BeforeScenario */
 	public function setUpScenarioGetIpUrls(BeforeScenarioScope $scope)
 	{
-		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
-		$this->ipv4Url = $suiteParameters['ipv4_url'];
-		$this->ipv6Url = $suiteParameters['ipv6_url'];
-		$baseUrl = $this->getMinkParameter("base_url");
-		$baseUrlForSourceIp = $baseUrl;
+		// $suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
+		// $this->ipv4Url = $suiteParameters['ipv4_url'];
+		// $this->ipv6Url = $suiteParameters['ipv6_url'];
+		$this->ipv4Url = getenv('IPV4_URL');
+		$this->ipv6Url = getenv('IPV6_URL');
+		$this->baseUrl = $this->getMinkParameter("base_url");
+		$this->baseUrlForSourceIp = $baseUrl;
 	}
 }
