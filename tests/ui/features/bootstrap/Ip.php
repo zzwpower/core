@@ -37,7 +37,10 @@ trait Ip
 	 * 
 	 * @var string
 	 */
-	private $baseUrlForSourceIp = 'base_url';
+	private $baseUrlForSourceIp = $this->getMinkParameter("base_url");
+
+	private $ipv4Url;
+	private $ipv6Url;
 		
 	/**
 	 * @When the client accesses the server from a :networkScope :ipAddressFamily address
@@ -60,13 +63,22 @@ trait Ip
 	 */
 	public function theClientAccessesTheServerFromIpAddress($sourceIpAddress) {
 		$this->sourceIpAddress = $sourceIpAddress;
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
 
 		if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-			$this->baseUrlForSourceIp = 'ipv4_url';
+			$this->baseUrlForSourceIp = $this->ipv4Url;
 		} else if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-			$this->baseUrlForSourceIp = 'ipv6_url';
+			$this->baseUrlForSourceIp = $this->ipv6Url;
 		} else {
-			$this->baseUrlForSourceIp = 'base_url';
+			$this->baseUrlForSourceIp = $this->getMinkParameter("base_url");
 		}
+	}
+
+	/** @BeforeScenario */
+	public function setUpScenarioGetIpUrls(BeforeScenarioScope $scope)
+	{
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
+		$this->ipv4Url = $suiteParameters['ipv4_url'];
+		$this->ipv6Url = $suiteParameters['ipv6_url'];
 	}
 }
