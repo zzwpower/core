@@ -19,6 +19,8 @@
  * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\IpHelper;
 
 trait Ip
