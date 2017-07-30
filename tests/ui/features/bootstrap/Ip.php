@@ -66,7 +66,6 @@ trait Ip
 	 */
 	public function theClientAccessesTheServerFromIpAddress($sourceIpAddress) {
 		$this->sourceIpAddress = $sourceIpAddress;
-		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
 
 		if (filter_var($sourceIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
 			$this->baseUrlForSourceIp = $this->ipv4Url;
