@@ -545,11 +545,11 @@ class Request implements \ArrayAccess, \Countable, IRequest {
 	 * @return string IP address
 	 */
 	public function getServerAddress() {
-		if (array_key_exists($this->server['SERVER_ADDR'])) {
+		if (isset($this->server['SERVER_ADDR'])) {
 			return $this->server['SERVER_ADDR'];
 		}
 
-		if (array_key_exists($this->env['SERVER_ADDR'])) {
+		if (isset($this->env['SERVER_ADDR'])) {
 			return $this->env['SERVER_ADDR'];
 		}
 
