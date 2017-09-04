@@ -141,7 +141,10 @@ class FileRow extends OwnCloudPage {
 	 */
 	public function openSharingDialog() {
 		$this->findSharingButton()->click();
-		$this->waitTillElementIsNull($this->loadingIndicatorXpath);
+		$this->waitTillElementIsNull(
+			$this->loadingIndicatorXpath,
+			LONGUIWAITTIMEOUTMILLISEC
+		);
 		return $this->getPage("FilesPageElement\\SharingDialog");
 	}
 
