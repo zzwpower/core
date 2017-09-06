@@ -9,6 +9,7 @@
 namespace Test\Files\Config;
 
 use OC\DB\QueryBuilder\Literal;
+use OC\Files\Cache\Cache;
 use OC\Files\Config\UserMountCache;
 use OC\Files\Mount\MountPoint;
 use OC\Log;
@@ -86,7 +87,7 @@ class UserMountCacheTest extends TestCase {
 				->where($builder->expr()->eq('fileid', new Literal($fileId)))
 				->execute();
 		}
-		\Cache::$metaDataCache->clear();
+		Cache::$metaDataCache->clear();
 	}
 
 	private function getStorage($storageId, $rootId) {
