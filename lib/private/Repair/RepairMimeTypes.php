@@ -128,7 +128,9 @@ class RepairMimeTypes implements IRepairStep {
 				// delete wrong mimetype
 				\OC_DB::executeAudited(self::deleteStmt(), [$wrongId]);
 
-				Cache::$metaDataCache->clear();
+				if (isset(Cache::$metaDataCache)) {
+					Cache::$metaDataCache->clear();
+				}
 			}
 		}
 	}
@@ -136,7 +138,9 @@ class RepairMimeTypes implements IRepairStep {
 	private function updateMimetypes($updatedMimetypes) {
 		if (empty($this->folderMimeTypeId)) {
 			$result = \OC_DB::executeAudited(self::getIdStmt(), ['httpd/unix-directory']);
-			Cache::$metaDataCache->clear();
+			if (isset(Cache::$metaDataCache)) {
+				Cache::$metaDataCache->clear();
+			}
 			$this->folderMimeTypeId = (int)$result->fetchOne();
 		}
 
@@ -155,7 +159,9 @@ class RepairMimeTypes implements IRepairStep {
 
 			// change mimetype for files with x extension
 			\OC_DB::executeAudited(self::updateByNameStmt(), [$mimetypeId, $this->folderMimeTypeId, $mimetypeId, '%.' . $extension]);
-			Cache::$metaDataCache->clear();
+			if (isset(Cache::$metaDataCache)) {
+				Cache::$metaDataCache->clear();
+			}
 		}
 	}
 

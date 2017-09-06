@@ -78,7 +78,9 @@ class DeleteOrphanedFiles extends Command {
 			}
 			$result->closeCursor();
 		}
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 
 		$output->writeln("$deletedEntries orphaned file cache entries deleted");
 	}

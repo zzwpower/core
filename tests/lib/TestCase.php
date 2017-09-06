@@ -266,7 +266,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
 	static protected function tearDownAfterClassCleanFileCache(IQueryBuilder $queryBuilder) {
 		$queryBuilder->delete('filecache')
 			->execute();
-		if (Cache::$metaDataCache !== null) {
+		if (isset(Cache::$metaDataCache)) {
 			Cache::$metaDataCache->clear();
 		}
 	}

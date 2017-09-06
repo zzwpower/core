@@ -80,7 +80,9 @@ class DefaultShareProviderTest extends TestCase {
 	public function tearDown() {
 		$this->dbConn->getQueryBuilder()->delete('share')->execute();
 		$this->dbConn->getQueryBuilder()->delete('filecache')->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$this->dbConn->getQueryBuilder()->delete('storages')->execute();
 	}
 
@@ -819,7 +821,9 @@ class DefaultShareProviderTest extends TestCase {
 				'name' => $qb->expr()->literal(basename($path)),
 			]);
 		$this->assertEquals(1, $qb->execute());
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		return $qb->getLastInsertId();
 	}
 

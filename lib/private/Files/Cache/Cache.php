@@ -80,7 +80,14 @@ class Cache implements ICache {
 	protected $connection;
 
 	/**
+	 * caches 2048 filecache rows
+	 *
+	 * FIXME first, refactor this class as an entity and add any necessary methods to its mapper
+	 * FIXME then, get rid of all the places that directly touch the tables
+	 * FIXME finally, make this private non-static
+	 * 
 	 * @var CappedMemoryCache
+	 * @deprecated You are not supposed to mess with the filecache directly
 	 */
 	public static $metaDataCache = null;
 

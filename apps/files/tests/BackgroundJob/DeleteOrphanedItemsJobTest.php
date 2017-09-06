@@ -48,7 +48,9 @@ class DeleteOrphanedItemsJobTest extends \Test\TestCase {
 		$query->delete('filecache')
 			->where($query->expr()->eq('fileid', $query->createNamedParameter($fileId, IQueryBuilder::PARAM_INT)))
 			->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$this->cleanMapping($table);
 	}
 
@@ -81,6 +83,9 @@ class DeleteOrphanedItemsJobTest extends \Test\TestCase {
 				'path' => $query->createNamedParameter('apps/files/tests/deleteorphanedtagsjobtest.php'),
 				'path_hash' => $query->createNamedParameter(md5('apps/files/tests/deleteorphanedtagsjobtest.php')),
 			])->execute();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$fileId = $query->getLastInsertId();
 
 		// Existing file
@@ -126,6 +131,9 @@ class DeleteOrphanedItemsJobTest extends \Test\TestCase {
 				'path' => $query->createNamedParameter('apps/files/tests/deleteorphanedtagsjobtest.php'),
 				'path_hash' => $query->createNamedParameter(md5('apps/files/tests/deleteorphanedtagsjobtest.php')),
 			])->execute();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$fileId = $query->getLastInsertId();
 
 		// Existing file
@@ -171,6 +179,9 @@ class DeleteOrphanedItemsJobTest extends \Test\TestCase {
 				'path' => $query->createNamedParameter('apps/files/tests/deleteorphanedtagsjobtest.php'),
 				'path_hash' => $query->createNamedParameter(md5('apps/files/tests/deleteorphanedtagsjobtest.php')),
 			])->execute();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$fileId = $query->getLastInsertId();
 
 		// Existing file
@@ -218,6 +229,9 @@ class DeleteOrphanedItemsJobTest extends \Test\TestCase {
 				'path' => $query->createNamedParameter('apps/files/tests/deleteorphanedtagsjobtest.php'),
 				'path_hash' => $query->createNamedParameter(md5('apps/files/tests/deleteorphanedtagsjobtest.php')),
 			])->execute();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$fileId = $query->getLastInsertId();
 
 		// Existing file

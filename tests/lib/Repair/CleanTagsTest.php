@@ -67,7 +67,9 @@ class CleanTagsTest extends \Test\TestCase {
 
 		$qb->delete('filecache')
 			->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 	public function testRun() {
@@ -189,7 +191,9 @@ class CleanTagsTest extends \Test\TestCase {
 				'path_hash'		=> $qb->createNamedParameter(md5($fileName)),
 			])
 			->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 
 		$this->createdFile = (int) $this->getLastInsertID('filecache', 'fileid');
 		return $this->createdFile;

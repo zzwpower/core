@@ -89,7 +89,9 @@ class AvatarPermissions implements IRepairStep {
 
 
 		$qb2->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 	/**
@@ -111,7 +113,9 @@ class AvatarPermissions implements IRepairStep {
 			->setParameter('like', 'home::%');
 
 		$qb2->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 }

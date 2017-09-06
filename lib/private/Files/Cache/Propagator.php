@@ -98,7 +98,9 @@ class Propagator implements IPropagator {
 
 		$builder->execute();
 
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 	protected function getParents($path) {
@@ -183,8 +185,10 @@ class Propagator implements IPropagator {
 		$this->batch = [];
 
 		$this->connection->commit();
-		
-		Cache::$metaDataCache->clear();
+
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 

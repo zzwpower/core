@@ -54,7 +54,9 @@ class AvatarPermissionsTest extends \Test\TestCase {
 	protected function cleanUpTables() {
 		$qb = $this->connection->getQueryBuilder();
 		$qb->delete('filecache')->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$qb->delete('storages')->execute();
 	}
 
@@ -165,7 +167,9 @@ class AvatarPermissionsTest extends \Test\TestCase {
 			]);
 
 		$qb->execute();
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 
 		return $qb->getLastInsertId();
 	}

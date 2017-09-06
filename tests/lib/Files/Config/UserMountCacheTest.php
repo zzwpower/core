@@ -87,7 +87,9 @@ class UserMountCacheTest extends TestCase {
 				->where($builder->expr()->eq('fileid', new Literal($fileId)))
 				->execute();
 		}
-		Cache::$metaDataCache->clear();
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 	}
 
 	private function getStorage($storageId, $rootId) {
@@ -317,6 +319,9 @@ class UserMountCacheTest extends TestCase {
 			'etag' => '',
 			'permissions' => 31
 		], ['storage', 'path_hash']);
+		if (isset(Cache::$metaDataCache)) {
+			Cache::$metaDataCache->clear();
+		}
 		$id = (int)$this->connection->lastInsertId('*PREFIX*filecache');
 		$this->fileIds[] = $id;
 		return $id;
