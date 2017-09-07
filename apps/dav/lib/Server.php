@@ -37,6 +37,7 @@ use OCA\DAV\Connector\Sabre\DavAclPlugin;
 use OCA\DAV\Connector\Sabre\DummyGetResponsePlugin;
 use OCA\DAV\Connector\Sabre\FakeLockerPlugin;
 use OCA\DAV\Connector\Sabre\FilesPlugin;
+use OCA\DAV\Connector\Sabre\FilesByIdPlugin;
 use OCA\DAV\Connector\Sabre\FilesReportPlugin;
 use OCA\DAV\Connector\Sabre\SharesPlugin;
 use OCA\DAV\DAV\PublicAuth;
@@ -53,6 +54,13 @@ use OCA\DAV\Connector\Sabre\TagsPlugin;
 use OCA\DAV\AppInfo\PluginManager;
 use OCA\DAV\Connector\Sabre\MaintenancePlugin;
 use OCA\DAV\Connector\Sabre\ValidateRequestPlugin;
+use Sabre\HTTP\ResponseInterface;
+use Sabre\HTTP\RequestInterface;
+use OCP\Files\Folder;
+use OCP\IUserSession;
+use Sabre\DAV\Exception\NotFound;
+use Sabre\DAV\Exception\MethodNotAllowed;
+use OCP\Files\NotFoundException;
 
 class Server {
 
@@ -159,12 +167,19 @@ class Server {
 		}
 
 		// wait with registering these until auth is handled and the filesystem is setup
-		$this->server->on('beforeMethod', function () use ($root) {
+		$this->server->on('beforeMethod', function (RequestInterface $request, ResponseInterface $response) use ($root) {
 			// custom properties plugin must be the last one
 			$userSession = \OC::$server->getUserSession();
 			$user = $userSession->getUser();
 			if (!is_null($user)) {
 				$view = \OC\Files\Filesystem::getView();
+
+				// TODO: switch to LazyUserFolder
+				$userFolder = \OC::$server->getUserFolder();
+				if ($this->handleRedirectFileId($request, $response, $userSession, $userFolder) === false) {
+					return false;
+				}
+
 				$this->server->addPlugin(
 					new FilesPlugin(
 						$this->server->tree,
@@ -193,8 +208,6 @@ class Server {
 						$this->server->tree, \OC::$server->getTagManager()
 					)
 				);
-				// TODO: switch to LazyUserFolder
-				$userFolder = \OC::$server->getUserFolder();
 				$this->server->addPlugin(new SharesPlugin(
 					$this->server->tree,
 					$userSession,
@@ -230,6 +243,64 @@ class Server {
 				$root->addChild($appCollection);
 			}
 		});
+	}
+
+	private function handleRedirectFileId(RequestInterface $request, ResponseInterface $response, IUserSession $userSession, Folder $userFolder) {
+		if ($request->getPath() === 'fileids') {
+			// any method on the "fileids" folder
+			throw new MethodNotAllowed();
+		}
+
+		if (strpos($request->getPath(), 'fileids/') !== 0) {
+			return;
+		}
+
+		$sections = explode('/', $request->getPath());
+
+		array_shift($sections);
+		$fileId = array_shift($sections);
+
+		$results = $userFolder->getById($fileId);
+		if (empty($results)) {
+			throw new NotFound('File with id ' . $fileId . ' not found');
+		}
+
+		$node = $results[0];
+		if (count($sections) > 0) {
+			if ($node instanceof Folder) {
+				// continue searching deeper
+				try {
+					$node = $node->get(implode('/', $sections));
+					if ($node === null) {
+						throw new NotFound();
+					}
+				} catch (NotFoundException $e) {
+					throw new NotFound();
+				}
+			} else {
+				// not a folder
+				throw new NotFound();
+			}
+		}
+
+		$nodePath = trim($userFolder->getRelativePath($node->getPath()), '/');
+
+		$nodePath = implode(
+			'/', array_map(
+				rawurlencode,
+				explode('/', $nodePath)
+			)
+		);
+
+		// redirect
+		$davPath = rtrim($request->getBaseUrl(), '/') . '/files/' . rawurlencode($userSession->getUser()->getUid()) . '/' . $nodePath;
+		$response->setStatus(302);
+		$response->setHeader('Location', $davPath);
+		$response->setHeader('Redirect-ref', 'URI');
+
+		$this->server->sapi->sendResponse($response);
+
+		return false;
 	}
 
 	public function exec() {
