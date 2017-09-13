@@ -373,9 +373,8 @@ class Local extends \OC\Files\Storage\Common {
 			$realPath = $realPath . '/';
 		}
 
-		// Is broken symlink?
-		if (is_link($fullPath) && !file_exists($fullPath)) {
-			throw new ForbiddenException("$fullPath is a broken/dead symlink", false);
+		if (!is_readable($fullPath)) {
+			throw new ForbiddenException("Can`t read $fullPath", false);
 		}
 
 		if (substr($realPath, 0, $this->dataDirLength) === $this->realDataDir) {
