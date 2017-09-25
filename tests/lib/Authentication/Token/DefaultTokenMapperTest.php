@@ -27,6 +27,7 @@ use OC\Authentication\Token\DefaultToken;
 use OC\Authentication\Token\DefaultTokenMapper;
 use OC\Authentication\Token\IToken;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IDBConnection;
 use Test\TestCase;
 
 /**
@@ -39,6 +40,7 @@ class DefaultTokenMapperTest extends TestCase {
 
 	/** @var DefaultTokenMapper */
 	private $mapper;
+	/** @var IDBConnection */
 	private $dbConnection;
 	private $time;
 
@@ -194,4 +196,9 @@ class DefaultTokenMapperTest extends TestCase {
 		$this->assertEquals(3, $this->getNumberOfTokens());
 	}
 
+	public function testEmptyName() {
+		$token = new DefaultToken();
+		$token->setUid('user01');
+		$this->mapper->insert($token);
+	}
 }
