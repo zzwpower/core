@@ -199,6 +199,7 @@ class DefaultTokenMapperTest extends TestCase {
 	public function testEmptyName() {
 		$token = new DefaultToken();
 		$token->setUid('user01');
+		$token->setName('');
 		$this->mapper->insert($token);
 	}
 }
