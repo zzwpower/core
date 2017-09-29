@@ -308,6 +308,29 @@ class Setup {
 		// generate a secret
 		$secret = $this->random->generate(48);
 
+		//exclude folder list, which can be further expanded by the admin
+		$excludeFolders = array_values(array(
+			\OC::$SERVERROOT . '/data',
+			\OC::$SERVERROOT . '/themes',
+			\OC::$SERVERROOT . '/config',
+			\OC::$SERVERROOT . '/apps',
+			\OC::$SERVERROOT . '/assets',
+			\OC::$SERVERROOT . '/lost+found'
+		));
+
+		$excludeFiles = array_values(array(
+			'.DS_Store',
+			'Thumbs.db',
+			'.directory',
+			'.webapp',
+			'.htaccess',
+			'.user.ini'
+		));
+
+		$excludeFileNamePatterns = array_values(array(
+			'/^\.webapp-owncloud-.*/'
+		));
+
 		//write the config file
 		$this->config->setSystemValues([
 			'passwordsalt'		=> $salt,
@@ -317,6 +340,9 @@ class Setup {
 			'overwrite.cli.url'	=> $request->getServerProtocol() . '://' . $request->getInsecureServerHost() . \OC::$WEBROOT,
 			'dbtype'			=> $dbType,
 			'version'			=> implode('.', \OCP\Util::getVersion()),
+			'excludedFolders'   => $excludeFolders,
+			'excludedFiles'      => $excludeFiles,
+			'excludedFilenamePatterns' => $excludeFileNamePatterns,
 		]);
 
 		try {

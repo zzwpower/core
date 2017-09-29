@@ -1205,6 +1205,37 @@ $CONFIG = array(
 		'~snapshot',
 	),
 /**
+ * Exclude directories from the integrity checker command
+ */
+'excludedFolders' =>
+	array (
+		0 => '/home/sujith/test/owncloud/data',
+		1 => '/home/sujith/test/owncloud/themes',
+		2 => '/home/sujith/test/owncloud/config',
+		3 => '/home/sujith/test/owncloud/apps',
+		4 => '/home/sujith/test/owncloud/assets',
+		5 => '/home/sujith/test/owncloud/lost+found',
+	),
+/**
+ * Exclude files from the integrity checker command
+ */
+'excludedFiles' =>
+	array (
+		0 => '.DS_Store',
+		1 => 'Thumbs.db',
+		2 => '.directory',
+		3 => '.webapp',
+		4 => '.htaccess',
+		5 => '.user.ini',
+	),
+/**
+ * Exclude file name patterns from the integrity checker command
+ */
+'excludedFilenamePatterns' =>
+	array (
+		0 => '/^\\.webapp-owncloud-.*/',
+	),
+/**
  * Define a default folder for shared files and folders other than root.
  */
 'share_folder' => '/',

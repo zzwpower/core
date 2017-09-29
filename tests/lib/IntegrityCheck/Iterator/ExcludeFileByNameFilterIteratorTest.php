@@ -22,20 +22,40 @@
 namespace Test\IntegrityCheck\Iterator;
 
 use \OC\IntegrityCheck\Iterator\ExcludeFileByNameFilterIterator;
+use RecursiveIterator;
 use Test\TestCase;
 
 class ExcludeFileByNameFilterIteratorTest extends TestCase {
 	/** @var \PHPUnit_Framework_MockObject_MockBuilder */
 	protected $filter;
 
+	protected $config;
+
 	public function setUp() {
 		parent::setUp();
+		$recursiveIterator = $this->getMockBuilder(RecursiveIterator::class)
+			->getMock();
 		$this->filter = $this->getMockBuilder(ExcludeFileByNameFilterIterator::class)
 			->disableOriginalConstructor()
-			->setMethods(['current'])
+			->setMethods(['current', 'getExcludedFileNames', 'getExcludedFilePatterns'])
 			->getMock()
 		;
 
+		$excludedFiles = array (
+			'.DS_Store',
+			'Thumbs.db',
+			'.directory',
+			'.webapp'
+		);
+
+		$this->filter->expects($this->any())->method('getExcludedFileNames')
+			->will($this->returnValue($excludedFiles));
+		$this->filter->method('getExcludedFilePatterns')
+			->will($this->returnValue(array_values(array(
+				'/^\.webapp-owncloud-.*/'
+			))));
+
+		$this->filter->__construct($recursiveIterator);
 	}
 
 	public function fileNameProvider(){

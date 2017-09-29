@@ -21,6 +21,7 @@
  */
 
 namespace OC\IntegrityCheck\Iterator;
+use RecursiveIterator;
 
 /**
  * Class ExcludeFileByNameFilterIterator provides a custom iterator which excludes
@@ -36,12 +37,7 @@ class ExcludeFileByNameFilterIterator extends \RecursiveFilterIterator {
 	 *
 	 * @var array
 	 */
-	private $excludedFilenames = [
-		'.DS_Store', // Mac OS X
-		'Thumbs.db', // Microsoft Windows
-		'.directory', // Dolphin (KDE)
-		'.webapp', // Gentoo/Funtoo & derivatives use a tool known as webapp-config to manage wep-apps.
-	];
+	private $excludedFilenames = [];
 
 	/**
 	 * Array of excluded file name parts. Those are not scanned by the integrity checker.
@@ -50,9 +46,20 @@ class ExcludeFileByNameFilterIterator extends \RecursiveFilterIterator {
 	 *
 	 * @var array
 	 */
-	private $excludedFileNamePatterns = [
-		'/^\.webapp-owncloud-.*/', // Gentoo/Funtoo & derivatives use a tool known as webapp-config to manage wep-apps.
- 	];
+	private $excludedFileNamePatterns = [];
+
+	public function __construct(\RecursiveIterator $iterator) {
+		parent::__construct($iterator);
+
+		$this->excludedFilenames = $this->getExcludedFileNames();
+		if ($this->excludedFilenames === '') {
+			$this->excludedFilenames = array();
+		}
+		$this->excludedFileNamePatterns = $this->getExcludedFilePatterns();
+		if ($this->excludedFileNamePatterns === '') {
+			$this->excludedFileNamePatterns = array();
+		}
+	}
 
 	/**
 	 * @return bool
@@ -77,5 +84,13 @@ class ExcludeFileByNameFilterIterator extends \RecursiveFilterIterator {
 		}
 
 		return true;
+	}
+
+	protected function getExcludedFileNames() {
+		return \OC::$server->getConfig()->getSystemValue('excludedFiles', '');
+	}
+
+	protected function getExcludedFilePatterns() {
+		return \OC::$server->getConfig()->getSystemValue('excludedFilenamePatterns', '');
 	}
 }

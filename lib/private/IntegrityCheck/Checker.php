@@ -398,6 +398,9 @@ class Checker {
 			throw new InvalidSignatureException('Signature could not get verified.');
 		}
 
+		//Exclude files which shouldn't fall for comparison
+		$excludeFiles = \OC::$server->getSystemConfig()->getValue('excludedFiles', []);
+
 		// Compare the list of files which are not identical
 		$currentInstanceHashes = $this->generateHashes($this->getFolderIterator($basePath), $basePath);
 		$differencesA = array_diff($expectedHashes, $currentInstanceHashes);
@@ -405,6 +408,11 @@ class Checker {
 		$differences = array_unique(array_merge($differencesA, $differencesB));
 		$differenceArray = [];
 		foreach($differences as $filename => $hash) {
+			//If filename in exclude files list, then ignore it
+			if (in_array($filename, $excludeFiles, true)) {
+				continue;
+			}
+
 			// Check if file should not exist in the new signature table
 			if(!array_key_exists($filename, $expectedHashes)) {
 				$differenceArray['EXTRA_FILE'][$filename]['expected'] = '';
