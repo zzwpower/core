@@ -307,7 +307,9 @@ class User implements IUser {
 	 * @return bool
 	 */
 	public function canChangeDisplayName() {
-		if ($this->config->getSystemValue('allow_user_to_change_display_name') === false) {
+		if (($this->config->getSystemValue('allow_user_to_change_display_name') === false) &&
+			(!\OC::$server->getGroupManager()->isAdmin(\OC::$server->getUserSession()->getUser()->getUID())) &&
+			(!\OC::$server->getGroupManager()->getSubAdmin()->isSubAdmin(\OC::$server->getUserSession()->getUser()))) {
 			return false;
 		}
 		$backend = $this->account->getBackendInstance();
