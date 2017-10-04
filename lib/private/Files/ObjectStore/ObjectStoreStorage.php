@@ -406,7 +406,11 @@ class ObjectStoreStorage extends \OC\Files\Storage\Common implements IVersionedS
 		$stat['fileid'] = $this->getCache()->put($path, $stat);
 		try {
 			//upload to object storage
-			$this->objectStore->writeObject($this->getURN($stat), fopen($tmpFile, 'r'), $stat);
+			$storageStats = $this->objectStore->writeObject($this->getURN($stat), fopen($tmpFile, 'r'), $stat);
+			if (isset($storageStats['etag'])) {
+				$stat['etag'] = $storageStats['etag'];
+				$this->getCache()->update($stat['fileid'], $stat);
+			}
 		} catch (\Exception $ex) {
 			$this->getCache()->remove($path);
 			\OCP\Util::writeLog('objectstore', 'Could not create object: ' . $ex->getMessage(), \OCP\Util::ERROR);
