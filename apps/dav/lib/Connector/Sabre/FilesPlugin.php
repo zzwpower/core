@@ -225,9 +225,9 @@ class FilesPlugin extends ServerPlugin {
 			return;
 		}
 
-		$redirect = $node->getDirectDownload();
-		if (is_string($redirect) && $redirect !== '') {
-			$response->setHeader('Location', $redirect);
+		$directDownloadUrl = $node->getDirectDownload();
+		if (isset($directDownloadUrl['url'])) {
+			$response->setHeader('Location', $directDownloadUrl['url']);
 			$response->setStatus(302);
 			return false;
 		}

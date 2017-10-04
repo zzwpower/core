@@ -397,7 +397,7 @@ class File extends Node implements IFile, ICollection {
 			return [];
 		}
 
-		return $storage->getDirectDownload($internalPath);
+		return [ 'url' => $storage->getDirectDownload($internalPath)];
 	}
 
 	/**
