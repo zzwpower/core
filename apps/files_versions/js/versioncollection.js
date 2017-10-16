@@ -13,6 +13,8 @@
 	 * @memberof OCA.Versions
 	 */
 	var VersionCollection = OC.Backbone.Collection.extend({
+		sync: OC.Backbone.davSync,
+
 		model: OCA.Versions.VersionModel,
 
 		/**
@@ -24,12 +26,8 @@
 		_currentIndex: 0,
 
 		url: function() {
-			var url = OC.generateUrl('/apps/files_versions/ajax/getVersions.php');
-			var query = {
-				source: this._fileInfo.getFullPath(),
-				start: this._currentIndex
-			};
-			return url + '?' + OC.buildQueryString(query);
+			return OC.linkToRemoteBase('dav') + '/meta/' +
+				encodeURIComponent(this._fileInfo.get('id')) + '/v';
 		},
 
 		setFileInfo: function(fileInfo) {
@@ -74,17 +72,20 @@
 
 		parse: function(result) {
 			var fullPath = this._fileInfo.getFullPath();
-			var results = _.map(result.data.versions, function(version) {
-				var revision = parseInt(version.version, 10);
+			var fileId = this._fileInfo.get('id');
+			var results = _.map(result, function(version) {
+				var revision = parseInt(version.id, 10);
 				return {
 					id: revision,
-					name: version.name,
+					name: revision,
 					fullPath: fullPath,
 					timestamp: revision,
-					size: version.size
+					versionId: revision,
+					size: version['{DAV:}getcontentlength'],
+					fileId: fileId
 				};
 			});
-			this._endReached = result.data.endReached;
+			this._endReached = results.length;
 			this._currentIndex += results.length;
 			return results;
 		}

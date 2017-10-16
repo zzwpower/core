@@ -23,12 +23,11 @@
 namespace OCA\DAV\Meta;
 
 
-use OCP\Files\File;
-use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
-use OCP\Files\Node;
+use OCP\Files\NotFoundException;
 use Sabre\DAV\Collection;
 use Sabre\DAV\Exception\MethodNotAllowed;
+use Sabre\DAV\Exception\NotFound;
 
 class RootCollection extends Collection {
 
@@ -48,8 +47,12 @@ class RootCollection extends Collection {
 	 * @inheritdoc
 	 */
 	public function getChild($name) {
-		$child = $this->rootFolder->get("meta/$name");
-		return MetaFolder::nodeFactory($child);
+		try {
+			$child = $this->rootFolder->get("meta/$name");
+			return MetaFolder::nodeFactory($child);
+		} catch (NotFoundException $exception) {
+			throw new NotFound();
+		}
 	}
 	
 	/**
