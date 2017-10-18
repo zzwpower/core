@@ -166,7 +166,7 @@ class AccountMapper extends Mapper {
 		$qb->selectAlias('DISTINCT a.id', 'id')
 			->addSelect(['user_id', 'lower_user_id', 'display_name', 'email', 'last_login', 'backend', 'state', 'quota', 'home'])
 			->from($this->getTableName(), 'a')
-			->leftJoin('a', 'account_terms', 't', $qb->expr()->eq('a.id', 't.account_id'))
+			->leftJoin('a', $this->termMapper->getTableName(), 't', $qb->expr()->eq('a.id', 't.account_id'))
 			->orderBy('display_name')
 			->where($qb->expr()->like('lower_user_id', $qb->createNamedParameter($loweredParameter)))
 			->orWhere($qb->expr()->iLike('display_name', $qb->createNamedParameter($parameter)))
@@ -237,4 +237,18 @@ class AccountMapper extends Mapper {
 		$stmt->closeCursor();
 	}
 
+	/**
+	 * Creates an account from a row.
+	 *
+	 * @param array $row the row which should be converted to an account
+	 * @return Account the entity
+	 * @since 10.0
+	 *
+	 * @throws \BadFunctionCallException
+	 */
+	public function mapRowToEntity($row) {
+		/** @var Account $account */
+		$account = parent::mapRowToEntity($row);
+		return $account;
+	}
 }

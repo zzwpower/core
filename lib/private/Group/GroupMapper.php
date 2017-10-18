@@ -22,8 +22,12 @@
 namespace OC\Group;
 
 use OC\Group\BackendGroup;
+use OC\User\Account;
 use OCP\AppFramework\Db\Mapper;
 use OCP\IDBConnection;
+use OCP\AppFramework\Db\DoesNotExistException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 
 class GroupMapper extends Mapper {
 
@@ -32,8 +36,10 @@ class GroupMapper extends Mapper {
 	}
 
 	/**
-	 * @param string $gid
-	 * @return BackendGroup
+	 * Return backend group object or null in case does not exists
+	 *
+	 * @param string $uid
+	 * @return BackendGroup|null
 	 */
 	public function getGroup($gid) {
 		$qb = $this->db->getQueryBuilder();
@@ -41,9 +47,16 @@ class GroupMapper extends Mapper {
 			->from($this->getTableName())
 			->where($qb->expr()->eq('group_id', $qb->createNamedParameter($gid)));
 
-		/** @var BackendGroup $backendGroup */
-		$backendGroup = $this->findEntity($qb->getSQL(), $qb->getParameters());
-		return $backendGroup;
+		try {
+			/** @var BackendGroup $backendGroup */
+			$backendGroup = $this->findEntity($qb->getSQL(), $qb->getParameters());
+			if (is_null($backendGroup)) {
+				return null;
+			}
+			return $backendGroup;
+		} catch (DoesNotExistException $ex) {
+			return null;
+		}
 	}
 
 	/**
@@ -63,4 +76,18 @@ class GroupMapper extends Mapper {
 		return $this->findEntities($qb->getSQL(), $qb->getParameters(), $limit, $offset);
 	}
 
+	/**
+	 * Creates backend group from a row.
+	 *
+	 * @param array $row the row which should be converted to backend group
+	 * @return BackendGroup the entity
+	 * @since 10.0
+	 *
+	 * @throws \BadFunctionCallException
+	 */
+	public function mapRowToEntity($row) {
+		/** @var BackendGroup $backendGroup */
+		$backendGroup = parent::mapRowToEntity($row);
+		return $backendGroup;
+	}
 }
