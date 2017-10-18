@@ -51,17 +51,19 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @param IDBConnection $dbConn
 	 */
 	public function __construct(IUserManager $userManager,
-	                            IGroupManager $groupManager,
+								IGroupManager $groupManager,
 								IDBConnection $dbConn) {
 		$this->userManager = $userManager;
 		$this->groupManager = $groupManager;
 		$this->dbConn = $dbConn;
 
+		// TODO: This wont be needed since MembershipManager should handle this internally and only reason to keep this will be caching...
+		// TODO: BTW, will explode with FK anyways..
 		$this->userManager->listen('\OC\User', 'postDelete', function($user) {
 			$this->post_deleteUser($user);
 		});
 		$this->groupManager->listen('\OC\Group', 'postDelete', function($group) {
-			$this->post_deleteGroup($group);	
+			$this->post_deleteGroup($group);
 		});
 	}
 
@@ -72,6 +74,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return bool
 	 */
 	public function createSubAdmin(IUser $user, IGroup $group) {
+		// TODO: MembershipManager->addGroupAdmin($userId, $gid)
 		$qb = $this->dbConn->getQueryBuilder();
 
 		$qb->insert('group_admin')
@@ -93,6 +96,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return bool
 	 */
 	public function deleteSubAdmin(IUser $user, IGroup $group) {
+		// TODO: MembershipManager->deleteGroupAdmin($userId, $gid)
 		$qb = $this->dbConn->getQueryBuilder();
 
 		$qb->delete('group_admin')
@@ -111,6 +115,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return IGroup[]
 	 */
 	public function getSubAdminsGroups(IUser $user) {
+		// TODO: MembershipManager->->getAdminBackendGroups($userId) and convert to IGroup
 		$qb = $this->dbConn->getQueryBuilder();
 
 		$result = $qb->select('gid')
@@ -136,6 +141,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return IUser[]
 	 */
 	public function getGroupsSubAdmins(IGroup $group) {
+		// TODO: Use MembershipManager->getGroupAdminAccounts($gid)
 		$qb = $this->dbConn->getQueryBuilder();
 
 		$result = $qb->select('uid')
@@ -160,6 +166,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return array
 	 */
 	public function getAllSubAdmins() {
+		// TODO: Use MembershipManager->getAdminAccounts()
 		$qb = $this->dbConn->getQueryBuilder();
 
 		$result = $qb->select('*')
@@ -184,11 +191,12 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 
 	/**
 	 * checks if a user is a SubAdmin of a group
-	 * @param IUser $user 
+	 * @param IUser $user
 	 * @param IGroup $group
 	 * @return bool
 	 */
 	public function isSubAdminofGroup(IUser $user, IGroup $group) {
+		// TODO: Use MembershipManager->isGroupAdmin($userId, $gid)
 		$qb = $this->dbConn->getQueryBuilder();
 
 		/*
@@ -209,10 +217,11 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 
 	/**
 	 * checks if a user is a SubAdmin
-	 * @param IUser $user 
+	 * @param IUser $user
 	 * @return bool
 	 */
 	public function isSubAdmin(IUser $user) {
+		// TODO: Use MembershipManager->getAdminBackendGroups($userId)
 		// Check if the user is already an admin
 		if ($this->groupManager->isAdmin($user->getUID())) {
 			return true;
@@ -241,6 +250,7 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	 * @return bool
 	 */
 	public function isUserAccessible($subadmin, $user) {
+		//TODO: Optimize it a bit
 		if(!$this->isSubAdmin($subadmin)) {
 			return false;
 		}
@@ -257,6 +267,8 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	}
 
 	/**
+	 * TODO: This wont be needed since MembershipManager should handle this internally in IUser
+	 *
 	 * delete all SubAdmins by $user
 	 * @param IUser $user
 	 * @return boolean
@@ -272,6 +284,8 @@ class SubAdmin extends PublicEmitter implements ISubAdminManager {
 	}
 
 	/**
+	 * TODO: This wont be needed since MembershipManager should handle this internally in IGroup
+	 *
 	 * delete all SubAdmins by $group
 	 * @param IGroup $group
 	 * @return boolean
