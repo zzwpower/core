@@ -1,9 +1,6 @@
 <?php
 /**
- * @author Morris Jobke <hey@morrisjobke.de>
- * @author scolebrook <scolebrook@mac.com>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
- * @author Vincent Petry <pvince81@owncloud.com>
  *
  * @copyright Copyright (c) 2017, ownCloud GmbH
  * @license AGPL-3.0
@@ -22,26 +19,15 @@
  *
  */
 
-namespace OCA\DAV\Connector\Sabre;
 
-use OCA\DAV\DAV\CorePlugin;
+namespace OCA\DAV\Files;
 
-/**
- * Class \OCA\DAV\Connector\Sabre\Server
- *
- * This class overrides some methods from @see \Sabre\DAV\Server.
- *
- * @see \Sabre\DAV\Server
- */
-class Server extends \Sabre\DAV\Server {
+
+interface ICopySource {
 
 	/**
-	 * @see \Sabre\DAV\Server
+	 * @param string $destinationPath
+	 * @return boolean
 	 */
-	public function __construct($treeOrNode = null) {
-		parent::__construct($treeOrNode);
-		self::$exposeVersion = false;
-		$this->enablePropfindDepthInfinity = true;
-		$this->addPlugin(new CorePlugin());
-	}
+	public function copy($destinationPath);
 }
