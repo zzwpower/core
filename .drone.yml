@@ -108,6 +108,8 @@ pipeline:
     commands:
       - ./tests/drone/test-javascript.sh
     when:
+      event: [push, pull_request]
+      branch: [master, stable10, stable9.1]
       matrix:
         TEST_SUITE: phpunit
 
