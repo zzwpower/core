@@ -1117,7 +1117,7 @@ class Preview {
 
 			foreach ($providers as $closure) {
 				$provider = $closure();
-				if (!($provider instanceof \OCP\Preview\IProvider)) {
+				if (!($provider instanceof \OCP\Preview\IProvider2)) {
 					continue;
 				}
 
@@ -1127,8 +1127,7 @@ class Preview {
 				);
 
 				/** @var $provider Provider */
-				$preview = $provider->getThumbnail(
-					$file, $this->configMaxWidth, $this->configMaxHeight, $scalingUp = false);
+				$preview = $provider->getThumbnail($file, $this->configMaxWidth, $this->configMaxHeight, $scalingUp = false);
 
 				if (!($preview instanceof \OCP\IImage)) {
 					continue;
